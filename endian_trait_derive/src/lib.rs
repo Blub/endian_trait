@@ -53,15 +53,15 @@ struct Foo<A: Endian, B: Endian> {
 !*/
 
 extern crate proc_macro;
+extern crate proc_macro2;
 #[macro_use]
 extern crate quote;
 extern crate syn;
 
-use proc_macro::TokenStream;
-use quote::{
-	Tokens,
-	ToTokens,
-};
+use proc_macro::TokenStream as TokenStream_1;
+use proc_macro2::TokenStream as Tokens;
+use quote::ToTokens;
+
 use syn::{
 	Attribute,
 	Data,
@@ -80,7 +80,7 @@ use syn::{
 
 /// Hook for receiving `#[derive(Endian)]` code
 #[proc_macro_derive(Endian)]
-pub fn endian_trait(source: TokenStream) -> TokenStream {
+pub fn endian_trait(source: TokenStream_1) -> TokenStream_1 {
 	//  A parse failure means that the input was invalid Rust. This is not our
 	//  problem, so a panic is permissible.
 	let ast = syn::parse(source).unwrap();
@@ -150,37 +150,35 @@ fn impl_endian(ast: DeriveInput) -> Tokens {
 
 /// Generate the Endian impl for an enum with an integer repr and no data body.
 fn codegen_enum(name: &Ident, attrs: &[Attribute]) -> Tokens {
-	//  Find the attr that is #[repr(_)]. We need to build one for comparison.
-	let repr_path: syn::Path = Ident::from("repr").into();
 	//  Seek for a #[repr(_)] attribute
-	let repr: &Meta = &attrs.iter().find(|ref a| &a.path == &repr_path)
+	let repr: &Meta = &attrs.iter().find(|ref a| a.path.is_ident("repr"))
 	//  Unwrap, and panic if this returned None instead of Some, because repr is
 	//  the bare minimum of required attributes
 	.expect("Endian can only be derived on enums with #[repr()] attributes")
 	//  Take a reference to the actual value of the attribute, which is
 	//  "repr(_)" from the source.
-	.interpret_meta()
+	.parse_meta()
 	.expect("#[repr(_)] cannot fail to be interpreted");
 	//  Now figure out what the repr *is*. The format is #[repr(Name)] where
 	//  Name is one of {i,u}{8,16,32,64}. This comes out to be a
 	//  List(MetaList(Vec<Meta>, ..)) in syn structures. We want the one-element
 	//  Vec's one element. Anything else is broken.
-	let kind: &Ident = match *repr {
+	let kind: &syn::Path = match *repr {
 		Meta::List(MetaList { ref nested, .. }) => {
 			if nested.len() != 1 {
 				panic!("The #[repr()] attribute must be a single primitive integer type");
 			}
 			match nested[0] {
-				NestedMeta::Meta(Meta::Word(ref ty)) => ty,
+				NestedMeta::Meta(Meta::Path(ref ty)) => ty,
 				_ => panic!("The #[repr()] interior must be a primitive integer type"),
 			}
 		},
 		_ => unreachable!("The #[repr()] interior must be a primitive integer type"),
 	};
-	if kind == &Ident::from("C") {
+	if kind.is_ident("C") {
 		panic!("#[repr(C)] enums cannot implement Endian");
 	}
-	else if kind == &Ident::from("packed") {
+	else if kind.is_ident("packed") {
 		panic!("#[repr(packed)] enums cannot implement Endian");
 	}
 	quote! {

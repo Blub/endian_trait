@@ -21,10 +21,11 @@ exclude = [
 proc-macro = true
 
 [dependencies]
-quote = "0.4"
+quote = "1.0"
+proc-macro2 = "1.0"
 
 [dependencies.syn]
-version = "0.12"
+version = "1.0"
 features = [
 	"derive",
 	"extra-traits",
