@@ -115,22 +115,6 @@ personally prefer keeping those uncoupled.
 
 There's really no other reason to use this trait, as far as I'm aware.
 
-## Extra Features
-
-You can compile with `--features arrays` to have Endian implemented on arrays
-`[T: Endian; N]` where N is in the range 0 ≤ N ≤ 32. When const-generics are
-stabilized, this crate will update to use them.
-
-In your `Cargo.toml`, replace the original dependency on `endian_trait` with:
-
-```toml
-[dependencies.endian_trait]
-version = 1
-features = [
-    "arrays",
-]
-```
-
 [0]: https://github.com/rust-lang/rfcs/pull/1504
 [1]: https://github.com/rust-lang/rust/issues/35118
 [crate]: https://crates.io/crates/endian_trait

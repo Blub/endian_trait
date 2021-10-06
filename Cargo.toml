@@ -20,6 +20,7 @@ exclude = [
 path = "endian_trait_derive"
 version = "1.0.0"
 
+# With a major version bump this can be dropped.
 [features]
 arrays = []
 
