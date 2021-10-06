@@ -22,7 +22,7 @@ currently beyond the scope of this library.
 
 ## Usage
 
-**MINIMUM RUST VERSION: 1.31**
+**MINIMUM RUST VERSION: 1.51**
 
 Require this crate (`endian_trait`) in your Cargo.toml, and tag it with
 `#[macro_use]` for access to the custom derive macro.
